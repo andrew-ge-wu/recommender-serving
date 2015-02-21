@@ -5,8 +5,11 @@ import com.innometrics.integration.app.recommendation.model.RecommendationResult
 import com.innometrics.integration.app.recommendation.service.ItemRepository;
 import com.innometrics.integration.app.recommendation.service.RecommendationRepository;
 import com.innometrics.integration.app.recommendation.service.SingletonService;
+import jersey.repackaged.com.google.common.cache.Cache;
+import jersey.repackaged.com.google.common.cache.CacheBuilder;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author andrew, Innometrics
@@ -14,21 +17,27 @@ import java.util.*;
 public class MemoryRecommendationRepository implements RecommendationRepository {
     Map<String, Map<Comparable, Float>> storage = new HashMap<>();
     ItemRepository itemRepo = SingletonService.getInstanceFromConfig(ItemRepository.class);
+    Cache<String, List<RecommendationResult.ItemWrapper>> resultCache;
+
+    public MemoryRecommendationRepository() {
+        resultCache = CacheBuilder.newBuilder().maximumSize(10000).expireAfterWrite(1, TimeUnit.HOURS).build();
+    }
 
     @Override
     public RecommendationResult getRecommendations(String profileId, int nr) {
         Map<Comparable, Float> data = storage.get(profileId);
         Collection<RecommendationResult.ItemWrapper> items = new ArrayList<>(nr);
         if (data != null) {
-            TreeMap<Comparable, Float> sorted = sortByValue(data);
-            int count = 0;
-            for (Comparable eachId : sorted.navigableKeySet()) {
-                items.add(new RecommendationResult.ItemWrapper(itemRepo.getItem(eachId), data.get(eachId)));
-                count++;
-                if (count >= nr) {
-                    break;
+            List<RecommendationResult.ItemWrapper> cached = resultCache.getIfPresent(profileId);
+            if (cached == null) {
+                List<RecommendationResult.ItemWrapper> toCache = new ArrayList<>(nr);
+                TreeMap<Comparable, Float> sorted = sortByValue(data);
+                for (Comparable eachId : sorted.navigableKeySet()) {
+                    toCache.add(new RecommendationResult.ItemWrapper(itemRepo.getItem(eachId), data.get(eachId)));
                 }
+                resultCache.put(profileId, toCache);
             }
+            items = resultCache.getIfPresent(profileId).subList(0, nr - 1);
         }
         return new RecommendationResult(profileId, items);
 
@@ -41,6 +50,7 @@ public class MemoryRecommendationRepository implements RecommendationRepository 
             storage.put(recommendation.getProfileId(), new HashMap<Comparable, Float>());
         }
         storage.get(recommendation.getProfileId()).put(iid, recommendation.getPreference());
+        resultCache.invalidate(recommendation.getProfileId());
     }
 
     private TreeMap<Comparable, Float> sortByValue(Map<Comparable, Float> map) {
