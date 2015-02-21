@@ -25,7 +25,7 @@ public class SingletonService {
     public static Configuration getConfiguration() {
         if (configuration == null) {
             try {
-                configuration = new PropertiesConfiguration(ClassLoader.getSystemResource(DEFAULT_CONFIG));
+                configuration = new PropertiesConfiguration(SingletonService.class.getClassLoader().getResource(DEFAULT_CONFIG));
             } catch (ConfigurationException e) {
                 throw new RuntimeException(e);
             }
@@ -54,9 +54,16 @@ public class SingletonService {
 
     public static <T> T getInstanceFromConfig(Class<T> interfaceClass) {
         try {
-            String implClass = getConfiguration().getString(interfaceClass.getCanonicalName());
-            Class<?> classToInit = Class.forName(implClass);
-            return interfaceClass.cast(getObjectSingleton(classToInit));
+            if (interfaceClass.isInterface()) {
+                String implClass = getConfiguration().getString(interfaceClass.getCanonicalName());
+                if (implClass != null && implClass.length() > 0) {
+                    return interfaceClass.cast(getObjectSingleton(Class.forName(implClass)));
+                } else {
+                    throw new RuntimeException("Can not find implementation details for interface:" + interfaceClass.getCanonicalName());
+                }
+            } else {
+                return getObjectSingleton(interfaceClass);
+            }
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

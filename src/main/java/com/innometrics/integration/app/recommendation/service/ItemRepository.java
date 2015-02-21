@@ -5,8 +5,8 @@ import com.innometrics.integration.app.recommendation.model.Item;
 /**
  * @author andrew, Innometrics
  */
-public interface ItemRepository {
-    void setItem(Item item);
+public interface ItemRepository<T extends Comparable<T>> {
+    T setItem(Item item);
 
-    Item getItem(long itemId);
+    Item getItem(T itemId);
 }

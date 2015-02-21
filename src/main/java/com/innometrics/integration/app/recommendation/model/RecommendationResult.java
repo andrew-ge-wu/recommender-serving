@@ -1,22 +1,35 @@
 package com.innometrics.integration.app.recommendation.model;
 
+import java.util.Collection;
+
 /**
  * @author andrew, Innometrics
  */
 public class RecommendationResult {
-    private final User user;
-    private final ItemWrapper[] items;
+    private  String profileId;
+    private  Collection<ItemWrapper> items;
 
-    public RecommendationResult(User user, ItemWrapper[] items) {
-        this.user = user;
+    public RecommendationResult() {
+    }
+
+    public RecommendationResult(String profileId, Collection<ItemWrapper> items) {
+        this.profileId = profileId;
         this.items = items;
     }
 
-    public User getUser() {
-        return user;
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
     }
 
-    public ItemWrapper[] getItems() {
+    public void setItems(Collection<ItemWrapper> items) {
+        this.items = items;
+    }
+
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public Collection<ItemWrapper> getItems() {
         return items;
     }
 

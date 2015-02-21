@@ -1,14 +1,13 @@
 package com.innometrics.integration.app.recommendation.service;
 
 import com.innometrics.integration.app.recommendation.model.Recommendation;
-
-import java.util.List;
+import com.innometrics.integration.app.recommendation.model.RecommendationResult;
 
 /**
  * @author andrew, Innometrics
  */
 public interface RecommendationRepository {
-    public List<Recommendation> getRecommendations(long uid, int nr);
+    public RecommendationResult getRecommendations(String profileId, int nr);
 
-    void saveRecommendation(long uid, long iid, float preference);
+    void saveRecommendation(Recommendation recommendation);
 }

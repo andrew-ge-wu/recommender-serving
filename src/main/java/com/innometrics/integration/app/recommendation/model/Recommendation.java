@@ -4,25 +4,35 @@ package com.innometrics.integration.app.recommendation.model;
  * @author andrew, Innometrics
  */
 public class Recommendation {
-    private final long userId;
-    private final long itemId;
-    private final float preference;
+    private float preference;
+    private Item item;
+    private String profileId;
 
-    public Recommendation(long userId, long itemId, float preference) {
-        this.userId = userId;
-        this.itemId = itemId;
+    public Recommendation() {
+    }
+
+
+    public void setPreference(float preference) {
         this.preference = preference;
     }
 
-    public long getUserId() {
-        return userId;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
-    public long getItemId() {
-        return itemId;
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
     }
 
     public float getPreference() {
         return preference;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public String getProfileId() {
+        return profileId;
     }
 }
